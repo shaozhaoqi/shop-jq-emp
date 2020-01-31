@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- mapper:根标签，namespace：命名空间，随便写，一般保证命名空间唯一 -->
+<mapper namespace="com.fh.dao.UserDao">
+    <select id="queryCount" resultType="long">
+         select count(id) from jq_user;
+    </select>
+    <select id="queryList" parameterType="com.fh.bean.vo.UserVo" resultType="com.fh.bean.vo.UserVo" >
+        select u.salary,u.id,u.userName,d.deptName,j.jobName,d.leaderName,u.showTime from jq_user u
+        left join jq_job j on u.jobId = j.id
+        left join jq_dept d on u.deptId = d.id
+        limit #{start},#{length}
+    </select>
+   <select id="queryDeptList" resultType="com.fh.bean.po.Dept">
+      select * from jq_dept
+   </select>
+    <select id="queyrLeader" resultType="com.fh.bean.po.Dept" parameterType="java.lang.Integer">
+      select * from jq_dept where id=#{id}
+    </select>
+    <select id="queryUser" resultType="com.fh.bean.po.User">
+        select * from jq_user group by  deptId;
+    </select>
+</mapper>

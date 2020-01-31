@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<form class="form-horizontal" id="addUser">
+    <div class="row">
+        <div class="form-group">
+            <label class="col-md-4 control-label">员工姓名</label>
+            <div class="col-md-6">
+                <input class="form-control" name="userName" maxlength="15" >
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-md-4 control-label">薪资</label>
+            <div class="col-md-6">
+                <input class="form-control" name="salary" maxlength="15" >
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-md-4 control-label">出生日期</label>
+            <div class="col-md-6">
+                <input  type="date" class="form-control" name="showTime" maxlength="15">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-md-4 control-label">岗位</label>
+            <div class="col-md-6">
+                <select class="form-control col-md-4"id="jobId" name="jobId" >
+                    <option value="">===请选择===</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-md-4 control-label">部门</label>
+            <div class="col-md-6">
+                <select class="form-control col-md-4"id="deptId" name="deptId" onchange="queryleader()">
+                    <option value="">===请选择===</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-md-4 control-label">领导人</label>
+            <div class="col-md-6">
+                <input  type="text" class="form-control"id="leaders" disabled name="leaderName" maxlength="15">
+            </div>
+        </div>
+
+
+    </div>
+</form>
+</body>
+<script>
+    $(function () {
+        queryUserList();
+        queryDeptList()
+    })
+    var areaDates;
+    function queryUserList() {
+        $.post({
+            url:"http://localhost:8080/job/queryJobList",
+            dataType:"json",
+            success:function(data) {
+                areaDates = data.data;
+                var selectArea='<option value="">==请选择==</option>';
+                for (var i = 0; i <areaDates.length ; i++) {
+                    selectArea+='<option value="'+areaDates[i].id+'">'+areaDates[i].jobName+'</option>';
+                }
+                $("#jobId").html(selectArea);
+            }
+        })
+    }
+        var deptData;
+    function queryDeptList() {
+        $.post({
+            url:"http://localhost:8080/user/queryDeptList",
+            dataType:"json",
+            success:function(data) {
+                deptData = data.data;
+                var selectDept='<option value="">==请选择==</option>';
+                for (var i = 0; i <deptData.length ; i++) {
+                    selectDept+='<option value="'+deptData[i].id+'">'+deptData[i].deptName+'</option>';
+                }
+                $("#deptId").html(selectDept);
+            }
+        })
+    }
+        function queryleader() {
+             var ss = $("#deptId").val();
+             alert(ss)
+             $.post({
+                 url:"http://localhost:8080/user/queryleader",
+                 data:{
+                     id:ss
+                 },
+                 dataType:"json",
+                 success:function (res) {
+                     alert(JSON.stringify(res))
+                      var data=res.data;
+                      $("#leaders").val(data.leaderName);
+                 }
+             })
+        }
+</script>
+</html>

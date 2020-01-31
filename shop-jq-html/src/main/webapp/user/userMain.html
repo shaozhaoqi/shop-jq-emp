@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="/commons/bootstrap/css/bootstrap.min.css">
+    <link href="/commons/datatable/DataTables-1.10.18/css/dataTables.bootstrap.min.css" rel="stylesheet"/>
+    <link href="/commons/ztree/css/bootstrapStyle/bootstrapStyle.css" rel="stylesheet"/>
+    <script type="text/javascript" src="/commons/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" src="/commons/bootstrap/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/commons/datatable/DataTables-1.10.18/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="/commons/datatable/DataTables-1.10.18/js/dataTables.bootstrap.min.js"></script>
+    <script type="text/javascript" src="/commons/dateFormat.js"></script>
+    <script type="text/javascript" src="/commons/bootbox/bootbox.min.js"></script>
+    <link href="/commons/fileinput/css/fileinput.min.css" rel="stylesheet"/>
+</head>
+<body>
+<div class="panel panel-warning" >
+    <div class="panel-heading">列表展示
+    </div>
+    <button onclick="addUser()" class="btn btn-success"><span class="glyphicon glyphicon-plus">新增</span></button>
+    <button type="button" class="btn btn-default btn-sm btn-info" onclick="importExcel()">
+        <span class="glyphicon glyphicon-save">导出Excel</span>
+    </button>
+    <div class="panel-body"></div>
+    <table id="dataTable" class="table table-bordered table-striped"></table>
+</div>
+</body>
+<script>
+    var dataTable=$("#dataTable").DataTable({
+        "autoWidth": true, //自适应宽度
+        "info": true,//展示表格左下角信息,分页栏
+        "lengthChange": true,//是否改变每页展示的条数
+        "lengthMenu": [3, 6, 9],//可以随便定义每页展示条数
+        "ordering": false,//是否允许排序
+        "paging": true,//是否允许开启本地分页
+        "processing": true,//是否先处理状态
+        "serverSide": true,//true是服务器模式，false是客户端模式
+        "ajax":{
+            url:"http://localhost:8080/user/queryPageList",
+            "dataSrc":function (result) {
+                return result.list;
+            }
+        },
+        columns:[
+            {"data":"id",title:"主键"},
+            {"data":"userName",title:"员工姓名"},
+            {"data":"salary",title:"薪资"},
+            {"data":"showTime",title:"入职时间",render:function (data,type,row,meta) {
+                    if(data!=null){
+                        return new Date(data).Format("yyyy-MM-dd")
+                    }
+                    return "";
+                }},
+            {"data":"leaderName",title:"领导姓名"},
+            {"data":"deptName",title:"部门名称"},
+            {"data":"jobName",title:"岗位"},
+
+            {"data":"id",title:"操作",render:function (data,type,row,meta) {
+                    return '<button onclick="delUser(' + data + ')" class="btn btn-info"><span class="glyphicon glyphicon-pencil">删除</span></button>'+
+                        '<button onclick="updateUser(' + data + ')" class="btn btn-info"><span class="glyphicon glyphicon-pencil">修改</span></button>'
+                }}
+        ],
+        "language":{
+            "url":"/commons/datatable/Chinese.json"
+        }
+    })
+
+
+
+    function addUser() {
+        $.post({
+            url:"/user/addUser.html",
+            dataType:"html",
+            success:function (result) {
+                bootbox.confirm({
+                    message:result,
+                    title:"新增页面",
+                    buttons:{
+                        cancel:{
+                            label:"取消"
+                        },
+                        confirm:{
+                            label:"确认"
+                        },
+                    },
+                    callback:function (result) {
+                        if(result){
+                            $.post({
+                                url:"http://localhost:8080/user/addUser",
+                                dataType:"json",
+                                async:false,
+                                data:$("#addUser").serialize(),
+                                success:function (result) {
+                                    bootbox.alert("新增成功");
+                                    dataTable.ajax.reload();
+                                }
+                            })
+                        }
+                    }
+                })
+            }
+        })
+    }
+
+
+    function delUser(id) {
+        bootbox.confirm({
+            message:"您确定要删除吗？",
+            title:"删除页面",
+            buttons:{
+                cancel:{
+                    label:"取消",
+                },
+                confirm:{
+                    label:"确认"
+                }
+            },
+            callback:function (result) {
+                if(result){
+                    $.post({
+                        url:"http://localhost:8080/user/delUser",
+                        data:{
+                            id:id,
+                        },
+                        async:false,
+                        success:function (result) {
+                        }
+                    })
+                    bootbox.alert("删除成功");
+                    dataTable.ajax.reload();
+                }
+            }
+        })
+    }
+    
+    function importExcel() {
+        location.href="http://localhost:8080/user/importExcel";
+    }
+    
+    function updateUser(id) {
+        var updateHtml = "";
+        $.post({
+            url:"updateUser.html",
+            dataType:"html",
+            async:false,
+            success:function(result){
+                updateHtml = result;
+            }
+        })
+        $.post({
+            url:"http://localhost:8080/user/queryUserId",
+            data:{
+                id:id
+            },
+            dataType:"json",
+            success:function(result){
+                var b=result.data;
+                alert(JSON.stringify(b))
+                $("#userName").val(b.userName);
+                $("#salary").val(b.salary);
+                var date=b.showTime;
+                if(date!=null){
+                     date=new Date(date).Format("yyyy-MM-dd")
+                }
+                $("#showTime").val(date);
+                $("#id").val(b.id);
+                $("#jobList").val(b.jobId)
+                $("#deptList").val(b.deptId)
+                $("#leaders2").val(b.leaderName);
+            }
+        })
+        bootbox.confirm({
+            message:updateHtml,
+            title:"修改页面",
+            buttons:{
+                cancel:{
+                    label:"取消",
+                    className:"btn btn-danger"
+                },
+                confirm:{
+                    label:"确定",
+                    className:"btn btn-success"
+                }
+            },
+            callback:function (result) {
+                if(result){
+                    $.post({
+                        url:"http://localhost:8080/user/updateUser",
+                        dataType:"json",
+                        data:$("#updateUser").serialize(),
+                        success:function (result) {
+                            bootbox.alert("修改成功")
+                            dataTable.ajax.reload();
+                        }
+                    })
+                }
+            }
+        })
+    }
+</script>
+</html>
