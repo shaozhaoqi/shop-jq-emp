@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fh.dao.FlightDao" >
+<select id="queryCount" resultType="int">
+    select count(*) from k_flight
+</select>
+    <select id="queryFlight" parameterType="com.fh.model.Bean" resultType="com.fh.model.Flight">
+        select id,name,typeId,startTime,endTime,startTerminalId,endTerminalId
+         from k_flight
+         limit #{start},#{length}
+    </select>
+    <select id="queryPlaneType" parameterType="int" resultType="com.fh.model.Type">
+        select a.id,a.name,b.name typeName from k_plane_type a left join k_plane_type_name b
+        on a.type=b.id where a.type=#{typeId}
+    </select>
+    <select id="queryNameById" parameterType="int" resultType="com.fh.model.Area">
+        select * from k_area where id=#{startId}
+    </select>
+    <select id="queryNameByPid" parameterType="int" resultType="string">
+        select name from k_area where id=#{pid}
+    </select>
+    <select id="getTicketById" parameterType="int" resultType="com.fh.model.Ticket">
+        select * from k_flight_ticket where flightId=#{flightId}
+    </select>
+    <select id="xiala1" resultType="com.fh.model.Area">
+        select * from k_area  where pid=0
+    </select>
+    <select id="xiala2" parameterType="int" resultType="com.fh.model.Area">
+        select * from k_area  where pid=#{id}
+    </select>
+    <select id="xiala3" parameterType="int" resultType="com.fh.model.Area">
+        select * from k_area  where pid=#{id}
+    </select>
+    <select id="xialaa" resultType="com.fh.model.Area">
+        select * from k_area  where pid=0
+    </select>
+    <select id="xialab" parameterType="int" resultType="com.fh.model.Area">
+        select * from k_area  where pid=#{id}
+    </select>
+    <select id="xialac" parameterType="int" resultType="com.fh.model.Area">
+        select * from k_area  where pid=#{id}
+    </select>
+    <select id="queryJixing" resultType="com.fh.model.Type">
+        select * from k_plane_type
+    </select>
+    <select id="queryJipiao" resultType="com.fh.model.TicketName">
+        select * from k_flight_ticket_type
+    </select>
+    <insert id="addflight" parameterType="com.fh.model.Flight">
+        <selectKey keyProperty="id" order="AFTER" resultType="Integer">
+            select LAST_INSERT_ID()
+        </selectKey>
+        insert into k_flight values (null,#{name},#{typeId},#{startTime},#{endTime},#{startTerminalId},#{endTerminalId})
+    </insert>
+    <insert id="addJipiao" parameterType="com.fh.model.Flight">
+        insert into k_flight_ticket values (null,#{id},#{jicang},#{count},#{price})
+    </insert>
+    <delete id="shanchu1" parameterType="int">
+        delete from k_flight_ticket where flightId=#{id}
+    </delete>
+    <delete id="shanchu2" parameterType="int">
+delete from k_flight where id=#{id}
+    </delete>
+    <select id="findJipiao" parameterType="int" resultType="com.fh.model.Flight">
+        select type jicang,totalCount count,price from k_flight_ticket where flightId=#{id}
+    </select>
+    <select id="findhangbanById" parameterType="int" resultType="com.fh.model.Flight">
+        select * from k_flight  where id=#{id}
+    </select>
+    <select id="findjichangByhangzhanlou" parameterType="int" resultType="int">
+        select pid from k_area where id=#{startTerminalId}
+    </select>
+    <select id="findchengshiByjichang" parameterType="int" resultType="int">
+        select pid from k_area where id=#{jichang}
+    </select>
+    <update id="updateflight" parameterType="com.fh.model.Flight">
+        update k_flight set
+        name=#{name},typeId=#{typeId},startTime=#{startTime},endTime=#{endTime},startTerminalId=#{startTerminalId},endTerminalId=#{endTerminalId}
+        where id=#{id}
+    </update>
+    <update id="updateJipiao" parameterType="com.fh.model.Flight">
+        update k_flight_ticket set
+        type=#{jicang},totalCount=#{count},price=#{price}
+        where flightId=#{id}
+    </update>
+</mapper>
